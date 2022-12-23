@@ -88,7 +88,7 @@ fn handle_connection(mut stream: TcpStream) {
 
 enum WorkerJob {
     Stream(TcpStream),
-    Quit(bool),
+    Quit,
 }
 
 type Job = Box<WorkerJob>;
@@ -117,7 +117,7 @@ impl Worker {
                         log!("Worker {id} got a job.");
                         handle_connection(s);
                     },
-                    WorkerJob::Quit(_) => {
+                    WorkerJob::Quit => {
                         log!("Worker {id} going to quit.");
                         break;
                     },
@@ -167,7 +167,7 @@ impl ThreadPool {
 
     pub fn join(&mut self) {
         for _i in 0..self.workers.len() {
-            let job = Box::new(WorkerJob::Quit(true));
+            let job = Box::new(WorkerJob::Quit);
             self.sender.send(job).unwrap();
         }
 
