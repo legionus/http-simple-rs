@@ -1,6 +1,7 @@
 use std::env;
 use std::fs;
 use std::io::BufReader;
+use std::io::IoSlice;
 use std::io::prelude::*;
 use std::io;
 use std::net::TcpListener;
@@ -27,11 +28,12 @@ fn prog() -> String {
 }
 
 macro_rules! log {
-    // FIXME!
     ($($arg:tt)*) => {
-        io::stderr().write_fmt(format_args!("[{}] {}: ", Local::now().format("%Y-%m-%d %H:%M:%S"), prog())).unwrap();
-        io::stderr().write_fmt(format_args!($($arg)*)).unwrap();
-        io::stderr().write_fmt(format_args!("\n")).unwrap();
+        io::stderr().write_vectored(&[
+            IoSlice::new(format!("[{}] {}: ", Local::now().format("%Y-%m-%d %H:%M:%S"), prog()).as_bytes()),
+            IoSlice::new(format!($($arg)*).as_bytes()),
+            IoSlice::new(format!("\n").as_bytes()),
+        ]).unwrap();
     };
 }
 
